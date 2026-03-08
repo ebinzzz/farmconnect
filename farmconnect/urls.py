@@ -5,9 +5,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
+from farmconnect.landing_view import landing
 
 urlpatterns = [
-    path("", RedirectView.as_view(url="/auth/login/"), name="home"),
+    path("", landing, name="home"),
     path("django-admin/", admin.site.urls),
     path("auth/",     include("apps.accounts.urls",   namespace="accounts")),
     path("farmer/",   include("apps.farmers.urls",    namespace="farmers")),

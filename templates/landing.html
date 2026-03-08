@@ -1,0 +1,1447 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>FarmConnect – Fresh from the Farm to Your Door</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    /* ═══════════════════════════════════════════════
+       RESET + DESIGN TOKENS
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --leaf:        #1B6B2F;
+      --leaf-mid:    #2E8B46;
+      --leaf-light:  #4CAF50;
+      --leaf-pale:   #E8F5E9;
+      --cream:       #FDFAF4;
+      --sand:        #F0E6CE;
+      --sand-dark:   #E0D0B0;
+      --bark:        #2C1810;
+      --bark-mid:    #4A3020;
+      --saffron:     #F4A12B;
+      --saffron-dk:  #D4870B;
+      --sky:         #EAF5EE;
+      --white:       #FFFFFF;
+      --text-muted:  #6B7280;
+      --text-light:  #9CA3AF;
+
+      --radius-sm:   8px;
+      --radius-md:   14px;
+      --radius-lg:   20px;
+      --radius-xl:   28px;
+      --radius-full: 9999px;
+
+      --shadow-sm:   0 1px 4px rgba(0,0,0,.06);
+      --shadow-md:   0 4px 16px rgba(0,0,0,.08);
+      --shadow-lg:   0 8px 32px rgba(0,0,0,.12);
+      --shadow-xl:   0 16px 56px rgba(0,0,0,.16);
+
+      --max-w: 1200px;
+      --gutter: clamp(1.25rem, 4vw, 4rem);
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--bark);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; }
+
+    /* Every direct child of body fills full viewport width */
+    body > * { width: 100%; }
+
+    /* ═══════════════════════════════════════════════
+       LAYOUT UTILITIES
+    ═══════════════════════════════════════════════ */
+    .container {
+      width: 100%;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+
+    .section {
+      padding: clamp(3.5rem, 8vw, 6rem) var(--gutter);
+      max-width: var(--max-w);
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .section-full {
+      padding: clamp(3rem, 7vw, 5rem) var(--gutter);
+      width: 100%;
+    }
+
+    .section-header { margin-bottom: 2.5rem; }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+      font-weight: 900;
+      color: var(--bark);
+      line-height: 1.15;
+    }
+    .section-title span { color: var(--leaf); }
+
+    .section-sub {
+      margin-top: .6rem;
+      color: var(--text-muted);
+      font-size: clamp(.9rem, 1.5vw, 1.05rem);
+      max-width: 520px;
+      line-height: 1.65;
+    }
+
+    /* ═══════════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .65rem 1.5rem;
+      border-radius: var(--radius-full);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: .92rem;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all .2s ease;
+      white-space: nowrap;
+    }
+    .btn-green {
+      background: var(--leaf);
+      color: #fff;
+      border-color: var(--leaf);
+    }
+    .btn-green:hover { background: var(--leaf-mid); border-color: var(--leaf-mid); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(27,107,47,.3); }
+
+    .btn-outline-white {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255,255,255,.5);
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,.15); border-color: #fff; }
+
+    .btn-saffron {
+      background: var(--saffron);
+      color: #fff;
+      border-color: var(--saffron);
+    }
+    .btn-saffron:hover { background: var(--saffron-dk); border-color: var(--saffron-dk); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(244,161,43,.35); }
+
+    .btn-outline-green {
+      background: transparent;
+      color: var(--leaf);
+      border-color: var(--leaf);
+    }
+    .btn-outline-green:hover { background: var(--leaf); color: #fff; }
+
+    .btn-lg { padding: .8rem 2rem; font-size: 1rem; }
+
+    /* ═══════════════════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════════════════ */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(255,255,255,.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid var(--sand);
+      box-shadow: 0 2px 16px rgba(0,0,0,.05);
+    }
+
+    .navbar-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .navbar-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--leaf);
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      flex-shrink: 0;
+    }
+
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .navbar-links a {
+      color: var(--bark-mid);
+      font-weight: 500;
+      font-size: .94rem;
+      transition: color .2s;
+      position: relative;
+    }
+    .navbar-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0; right: 0;
+      height: 2px;
+      background: var(--leaf);
+      transform: scaleX(0);
+      transition: transform .2s;
+      border-radius: 2px;
+    }
+    .navbar-links a:hover { color: var(--leaf); }
+    .navbar-links a:hover::after { transform: scaleX(1); }
+
+    .navbar-actions { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
+
+    /* Mobile hamburger */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: .4rem;
+      color: var(--bark);
+      font-size: 1.4rem;
+    }
+
+    @media (max-width: 820px) {
+      .navbar-links { display: none; }
+      .hamburger { display: block; }
+      .navbar-actions .btn-outline-green { display: none; }
+    }
+    @media (max-width: 480px) {
+      .navbar-brand { font-size: 1.35rem; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════ */
+    .hero {
+      min-height: 92vh;
+      background: linear-gradient(135deg, #0a3d1a 0%, #1B6B2F 55%, #2E8B46 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 4rem 6rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle dot-grid texture */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* ── Hero Text ── */
+    .hero-text { color: #fff; position: relative; z-index: 2; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .4rem 1.1rem;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 1.6rem;
+    }
+    .hero-badge i { color: var(--saffron); font-size: .9rem; }
+
+    .hero-h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.12;
+      margin-bottom: 1.2rem;
+    }
+    .hero-h1 em {
+      font-style: normal;
+      color: var(--saffron);
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,.82);
+      max-width: 500px;
+      margin-bottom: 2rem;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-trust {
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .82rem;
+      color: rgba(255,255,255,.65);
+      font-weight: 500;
+    }
+    .trust-item i { color: var(--saffron); font-size: .95rem; }
+
+    /* ── Hero Visual ── */
+    .hero-visual {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cards-scene {
+      position: relative;
+      width: 360px;
+      height: 420px;
+      flex-shrink: 0;
+      animation: floatScene 4s ease-in-out infinite;
+    }
+
+    @keyframes floatScene {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    .hcard {
+      position: absolute;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+
+    .hcard-back {
+      width: 260px; height: 310px;
+      top: 40px; left: 10px;
+      transform: rotate(-4deg);
+    }
+    .hcard-mid {
+      width: 260px; height: 310px;
+      top: 30px; left: 90px;
+      transform: rotate(3deg);
+      z-index: 2;
+    }
+    .hcard-front {
+      width: 220px; height: 260px;
+      top: 120px; left: 60px;
+      transform: rotate(-1deg);
+      z-index: 3;
+      background: var(--sand);
+      border: 2px solid var(--sand-dark);
+    }
+
+    .hcard-img {
+      width: 100%; height: 65%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+    }
+    .hcard-body { padding: 1rem; }
+    .hcard-name { font-weight: 700; font-size: .95rem; color: var(--bark); }
+    .hcard-price { font-weight: 600; font-size: 1.1rem; color: var(--leaf); margin-top: .2rem; }
+    .hcard-by { font-size: .78rem; color: #888; margin-top: .15rem; }
+
+    .hcard-cart-row {
+      padding: .6rem .8rem;
+      border-bottom: 1px solid #eee;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--bark);
+    }
+    .hcard-cart-body { padding: .6rem .8rem; }
+    .hcard-cart-line { font-size: .78rem; color: #555; margin-bottom: .3rem; }
+    .hcard-cart-btn {
+      margin-top: .4rem;
+      background: var(--leaf);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: .4rem;
+      text-align: center;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .hero-pill {
+      position: absolute;
+      bottom: 20px;
+      right: 0;
+      background: var(--saffron);
+      color: #fff;
+      border-radius: var(--radius-full);
+      padding: .5rem 1.1rem;
+      font-size: .85rem;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(244,161,43,.5);
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 3rem 2rem;
+        text-align: center;
+        min-height: auto;
+      }
+      .hero-desc { margin-left: auto; margin-right: auto; }
+      .hero-cta { justify-content: center; }
+      .hero-trust { justify-content: center; }
+      .hero-visual { display: none; }
+    }
+    @media (max-width: 480px) {
+      .hero { padding: 2.5rem 1.25rem; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       STATS BAR
+    ═══════════════════════════════════════════════ */
+    .stats-wrap {
+      background: #fff;
+      border-top: 2px solid var(--sand);
+      border-bottom: 2px solid var(--sand);
+    }
+
+    .stats-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 2.25rem var(--gutter);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .stat-item { padding: .5rem; }
+    .stat-divider {
+      width: 1px;
+      background: var(--sand);
+      align-self: stretch;
+      margin: .4rem 0;
+    }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--leaf);
+      line-height: 1.1;
+    }
+    .stat-lbl {
+      font-size: .8rem;
+      color: var(--text-muted);
+      margin-top: .35rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 700px) {
+      .stats-inner {
+        grid-template-columns: repeat(3, 1fr);
+        row-gap: 1.5rem;
+      }
+      .stat-divider { display: none; }
+      .stat-item:nth-child(n+7) { display: none; }
+    }
+
+    @media (max-width: 400px) {
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       CATEGORIES
+    ═══════════════════════════════════════════════ */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      width: 100%;
+    }
+
+    .cat-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+      padding: 1.1rem .8rem;
+      background: #fff;
+      border: 1.5px solid var(--sand);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all .22s ease;
+      text-decoration: none;
+    }
+    .cat-chip:hover {
+      border-color: var(--leaf-light);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .cat-chip .cat-icon { font-size: 1.85rem; line-height: 1; }
+    .cat-chip .cat-label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--bark);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ═══════════════════════════════════════════════
+       PRODUCT GRID
+    ═══════════════════════════════════════════════ */
+    .products-bg { background: var(--sky); }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-auto-rows: auto;
+      gap: 1.25rem;
+      margin-top: 2rem;
+      width: 100%;
+      align-items: start;
+    }
+
+    .product-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      border: 1.5px solid var(--sand);
+      overflow: hidden;
+      transition: all .22s ease;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      min-height: 0;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--leaf-light);
+    }
+
+    .product-card .card-img {
+      width: 100%;
+      height: 172px;
+      object-fit: cover;
+      display: block;
+    }
+    .product-card .card-no-img {
+      width: 100%;
+      height: 172px;
+      background: linear-gradient(135deg, var(--sky) 0%, var(--sand) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.4rem;
+    }
+
+    .card-body {
+      padding: 1rem 1rem .75rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cat {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--leaf-mid);
+      margin-bottom: .3rem;
+    }
+    .card-name {
+      font-weight: 700;
+      font-size: .95rem;
+      line-height: 1.35;
+      color: var(--bark);
+    }
+    .card-farmer {
+      font-size: .75rem;
+      color: var(--text-light);
+      margin-top: .25rem;
+    }
+    .card-meta {
+      margin-top: auto;
+      padding-top: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-price {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--leaf);
+      line-height: 1;
+    }
+    .card-price span {
+      font-size: .72rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+    .card-stars {
+      font-size: .75rem;
+      color: var(--saffron);
+      font-weight: 600;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: .5rem;
+      padding: .75rem 1rem 1rem;
+      border-top: 1px solid var(--sand);
+    }
+    .card-actions a {
+      flex: 1;
+      text-align: center;
+      padding: .45rem .5rem;
+      border-radius: var(--radius-sm);
+      font-size: .8rem;
+      font-weight: 600;
+      transition: all .18s;
+    }
+    .card-btn-detail {
+      background: var(--sand);
+      color: var(--bark-mid);
+    }
+    .card-btn-detail:hover { background: var(--sand-dark); }
+
+    .card-btn-cart {
+      background: var(--leaf);
+      color: #fff;
+    }
+    .card-btn-cart:hover { background: var(--leaf-mid); }
+
+    .products-footer {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════
+       OFFER BANNER
+    ═══════════════════════════════════════════════ */
+    .offer-wrap {
+      background: linear-gradient(100deg, #0e4420 0%, var(--leaf) 50%, #2E8B46 100%);
+    }
+
+    .offer-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: clamp(2.5rem, 5vw, 4rem) var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .offer-text h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .offer-text p {
+      color: rgba(255,255,255,.72);
+      margin-top: .5rem;
+      font-size: .95rem;
+      max-width: 420px;
+    }
+    .offer-text .btn { margin-top: 1.2rem; }
+
+    .offer-badge {
+      background: var(--saffron);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 1.2rem 1.8rem;
+      text-align: center;
+      box-shadow: 0 12px 32px rgba(244,161,43,.45);
+      flex-shrink: 0;
+    }
+    .offer-badge .big { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; line-height: 1; }
+    .offer-badge .small { font-size: .85rem; font-weight: 700; letter-spacing: .05em; opacity: .9; margin-top: .2rem; }
+
+    /* ═══════════════════════════════════════════════
+       HOW IT WORKS
+    ═══════════════════════════════════════════════ */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+      width: 100%;
+    }
+
+    .step-card {
+      background: #fff;
+      border: 1.5px solid var(--sand);
+      border-radius: var(--radius-lg);
+      padding: 2.2rem 1.5rem 1.75rem;
+      text-align: center;
+      position: relative;
+      transition: all .22s;
+    }
+    .step-card:hover { border-color: var(--leaf-light); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+
+    .step-num {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--leaf);
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(27,107,47,.35);
+    }
+    .step-icon { font-size: 2.4rem; margin-bottom: .75rem; }
+    .step-title { font-weight: 700; font-size: .97rem; margin-bottom: .4rem; }
+    .step-desc { font-size: .84rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ═══════════════════════════════════════════════
+       FARMER SPOTLIGHT
+    ═══════════════════════════════════════════════ */
+    .farmers-bg { background: var(--sand); }
+
+    .farmer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2rem;
+      width: 100%;
+    }
+
+    .farmer-card {
+      background: #fff;
+      border: 1.5px solid var(--sand-dark);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 1.25rem;
+      text-align: center;
+      transition: all .22s;
+    }
+    .farmer-card:hover { border-color: var(--leaf-light); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+
+    .farmer-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--leaf), var(--leaf-mid));
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 4px 16px rgba(27,107,47,.3);
+    }
+    .farmer-name { font-weight: 700; font-size: .97rem; margin-bottom: .25rem; }
+    .farmer-loc { font-size: .78rem; color: var(--text-muted); margin-bottom: .75rem; display: flex; align-items: center; justify-content: center; gap: .3rem; }
+    .farmer-tag {
+      display: inline-block;
+      background: var(--leaf-pale);
+      color: var(--leaf);
+      border-radius: var(--radius-full);
+      padding: .2rem .85rem;
+      font-size: .74rem;
+      font-weight: 700;
+    }
+
+    .farmers-footer { margin-top: 2.5rem; text-align: center; }
+
+    /* ═══════════════════════════════════════════════
+       TESTIMONIALS
+    ═══════════════════════════════════════════════ */
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+      width: 100%;
+    }
+
+    .testimonial-card {
+      background: #fff;
+      border: 1.5px solid var(--sand);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .t-stars { color: var(--saffron); font-size: 1rem; margin-bottom: .85rem; letter-spacing: .05em; }
+    .t-quote { font-size: .93rem; line-height: 1.75; color: #555; font-style: italic; flex: 1; }
+
+    .t-author {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      margin-top: 1.4rem;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--sand);
+    }
+    .t-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--sky);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .t-name { font-weight: 700; font-size: .88rem; color: var(--bark); }
+    .t-loc  { font-size: .75rem; color: var(--text-light); margin-top: .1rem; }
+
+    /* ═══════════════════════════════════════════════
+       APP STRIP
+    ═══════════════════════════════════════════════ */
+    .app-wrap { background: var(--bark); }
+
+    .app-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: clamp(2.5rem, 5vw, 4rem) var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .app-text h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 2.5vw, 1.9rem);
+      font-weight: 900;
+      color: #fff;
+    }
+    .app-text p { color: rgba(255,255,255,.6); margin-top: .45rem; font-size: .95rem; max-width: 380px; }
+
+    .app-btns { display: flex; gap: .9rem; flex-wrap: wrap; }
+
+    .app-btn {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.2);
+      color: #fff;
+      border-radius: var(--radius-md);
+      padding: .8rem 1.4rem;
+      transition: all .2s;
+    }
+    .app-btn:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.4); }
+    .app-btn .app-icon { font-size: 1.5rem; }
+    .app-btn small { font-size: .68rem; opacity: .65; display: block; }
+    .app-btn strong { font-size: .92rem; font-weight: 700; }
+
+    /* ═══════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════ */
+    .footer-main {
+      background: #0a1f10;
+      color: rgba(255,255,255,.55);
+    }
+    .footer-grid {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: clamp(2.5rem, 5vw, 4rem) var(--gutter);
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+    }
+
+    .footer-brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: .75rem;
+    }
+    .footer-about { font-size: .85rem; line-height: 1.75; max-width: 250px; }
+
+    .footer-col h4 {
+      font-family: 'Playfair Display', serif;
+      color: #fff;
+      font-size: .95rem;
+      margin-bottom: 1rem;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: .55rem; }
+    .footer-col ul li a {
+      color: rgba(255,255,255,.5);
+      font-size: .85rem;
+      transition: color .2s;
+    }
+    .footer-col ul li a:hover { color: #fff; }
+
+    .footer-bottom-bar {
+      background: #060f08;
+      padding: 1.1rem var(--gutter);
+    }
+    .footer-bottom-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .8rem;
+      color: rgba(255,255,255,.35);
+    }
+
+    @media (max-width: 900px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+    @media (max-width: 500px) {
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLL REVEAL
+    ═══════════════════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════ -->
+<header class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">🌾 FarmConnect</a>
+
+    <ul class="navbar-links">
+      <li><a href="#products">Products</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#farmers">Our Farmers</a></li>
+      <li><a href="{% url 'accounts:register' %}">Sell on FarmConnect</a></li>
+    </ul>
+
+    <div class="navbar-actions">
+      <a href="{% url 'accounts:login' %}" class="btn btn-outline-green">Login</a>
+      <a href="{% url 'accounts:register' %}" class="btn btn-green">
+        <i class="bi bi-person-plus"></i> Register
+      </a>
+      <button class="hamburger" aria-label="Menu">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-text reveal">
+      <div class="hero-badge">
+        <i class="bi bi-patch-check-fill"></i>
+        100% Farm Verified · Fresh Daily
+      </div>
+
+      <h1 class="hero-h1">
+        Farm Fresh,<br/>
+        <em>Delivered</em><br/>
+        to Your Door
+      </h1>
+
+      <p class="hero-desc">
+        Buy directly from local farmers. No middlemen, no markup —
+        just pure, seasonal produce delivered fresh within 24 hours.
+      </p>
+
+      <div class="hero-cta">
+        <a href="{% url 'products:list' %}" class="btn btn-saffron btn-lg">
+          <i class="bi bi-bag-heart-fill"></i> Shop Now
+        </a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-outline-white btn-lg">
+          <i class="bi bi-shop"></i> Start Selling
+        </a>
+      </div>
+
+      <div class="hero-trust">
+        <div class="trust-item"><i class="bi bi-shield-check-fill"></i> Verified Farmers</div>
+        <div class="trust-item"><i class="bi bi-truck"></i> Free First Delivery</div>
+        <div class="trust-item"><i class="bi bi-arrow-counterclockwise"></i> Easy Returns</div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="cards-scene">
+        <!-- Back card -->
+        <div class="hcard hcard-back">
+          <div class="hcard-img" style="background: linear-gradient(135deg,#c8e6c9,#81c784);">🥦</div>
+          <div class="hcard-body">
+            <div class="hcard-name">Organic Broccoli</div>
+            <div class="hcard-price">₹45 <span style="font-size:.72rem;color:#aaa;font-weight:400">/kg</span></div>
+            <div class="hcard-by">by Rajesh Farms</div>
+          </div>
+        </div>
+        <!-- Mid card -->
+        <div class="hcard hcard-mid">
+          <div class="hcard-img" style="background: linear-gradient(135deg,#fff9c4,#ffcc80);">🥭</div>
+          <div class="hcard-body">
+            <div class="hcard-name">Alphonso Mango</div>
+            <div class="hcard-price">₹380 <span style="font-size:.72rem;color:#aaa;font-weight:400">/dozen</span></div>
+            <div class="hcard-by">by Goa Orchards</div>
+          </div>
+        </div>
+        <!-- Front cart card -->
+        <div class="hcard hcard-front">
+          <div class="hcard-cart-row">🛒 Your Cart</div>
+          <div class="hcard-cart-body">
+            <div class="hcard-cart-line">2 items added</div>
+            <div class="hcard-cart-line">Total: <strong style="color:var(--leaf)">₹470</strong></div>
+            <div class="hcard-cart-line">Delivery: <strong style="color:var(--leaf)">Free</strong></div>
+            <div class="hcard-cart-btn">Checkout →</div>
+          </div>
+        </div>
+        <div class="hero-pill">🚚 Free Delivery</div>
+      </div>
+    </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════
+     STATS BAR
+══════════════════════════════════════════ -->
+<div class="stats-wrap">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-num">2,400+</div>
+      <div class="stat-lbl">Happy Consumers</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item reveal reveal-delay-1">
+      <div class="stat-num">380+</div>
+      <div class="stat-lbl">Verified Farmers</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-num">1,200+</div>
+      <div class="stat-lbl">Products Listed</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item reveal reveal-delay-3">
+      <div class="stat-num">24h</div>
+      <div class="stat-lbl">Avg. Delivery</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item reveal reveal-delay-4">
+      <div class="stat-num">4.8 ★</div>
+      <div class="stat-lbl">Customer Rating</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CATEGORIES
+══════════════════════════════════════════ -->
+<div style="width:100%">
+  <div class="section">
+    <div class="section-header reveal">
+      <h2 class="section-title">Shop by <span>Category</span></h2>
+      <p class="section-sub">Browse hundreds of fresh categories sourced directly from farms across India.</p>
+    </div>
+    <div class="cat-grid">
+      {% for cat in categories %}
+      <a href="{% url 'products:list' %}?category={{ cat.slug }}" class="cat-chip reveal">
+        <span class="cat-icon">{{ cat.icon }}</span>
+        <span class="cat-label">{{ cat.name }}</span>
+      </a>
+      {% empty %}
+      {% for chip in cat_defaults %}
+      <a href="{% url 'products:list' %}" class="cat-chip reveal">
+        <span class="cat-icon">{{ chip.0 }}</span>
+        <span class="cat-label">{{ chip.1 }}</span>
+      </a>
+      {% empty %}
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🥦</span><span class="cat-label">Vegetables</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🍎</span><span class="cat-label">Fruits</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🌾</span><span class="cat-label">Grains</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🌿</span><span class="cat-label">Herbs</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🥛</span><span class="cat-label">Dairy</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🍯</span><span class="cat-label">Honey</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🌰</span><span class="cat-label">Dry Fruits</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🫒</span><span class="cat-label">Cold-Press Oils</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🌽</span><span class="cat-label">Organic Corn</span></a>
+      <a href="{% url 'products:list' %}" class="cat-chip reveal"><span class="cat-icon">🫚</span><span class="cat-label">Cooking Oils</span></a>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FEATURED PRODUCTS
+══════════════════════════════════════════ -->
+<div class="products-bg" id="products">
+  <div class="section">
+    <div class="section-header reveal">
+      <h2 class="section-title">Featured <span>Products</span></h2>
+      <p class="section-sub">Today's freshest picks, harvested within 48 hours and ready to order.</p>
+    </div>
+
+    <div class="product-grid">
+      {% for product in featured_products %}
+      <div class="product-card reveal">
+        {% if product.image %}
+          <img class="card-img" src="{{ product.image.url }}" alt="{{ product.name }}"/>
+        {% else %}
+          <div class="card-no-img">🌿</div>
+        {% endif %}
+        <div class="card-body">
+          <div class="card-cat">{{ product.category }}</div>
+          <div class="card-name">{{ product.name }}</div>
+          <div class="card-farmer">by {{ product.farmer.full_name }}</div>
+          <div class="card-meta">
+            <div class="card-price">₹{{ product.price }}<span>/{{ product.unit }}</span></div>
+            <div class="card-stars">{{ product.avg_rating }}★</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="{% url 'products:detail' product.pk %}" class="card-btn-detail">Details</a>
+          {% if user.is_authenticated and user.is_consumer %}
+          <a href="{% url 'orders:add_to_cart' product.pk %}" class="card-btn-cart">
+            <i class="bi bi-cart-plus"></i> Add
+          </a>
+          {% else %}
+          <a href="{% url 'accounts:login' %}" class="card-btn-cart">
+            <i class="bi bi-lock"></i> Login to Buy
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      {% for i in "12345678" %}
+      <div class="product-card reveal">
+        <div class="card-no-img">🌿</div>
+        <div class="card-body">
+          <div class="card-cat">Fresh Produce</div>
+          <div class="card-name">Seasonal Vegetable</div>
+          <div class="card-farmer">by Local Farmer</div>
+          <div class="card-meta">
+            <div class="card-price">₹--<span>/kg</span></div>
+            <div class="card-stars">5.0★</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="{% url 'products:list' %}" class="card-btn-cart" style="flex:1">Browse All</a>
+        </div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+
+    <div class="products-footer reveal">
+      <a href="{% url 'products:list' %}" class="btn btn-green btn-lg">
+        View All Products &nbsp;<i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     OFFER BANNER
+══════════════════════════════════════════ -->
+<div class="offer-wrap">
+  <div class="offer-inner reveal">
+    <div class="offer-text">
+      <h3>Free Delivery on Your First Order</h3>
+      <p>Register today and enjoy free delivery on orders above ₹199. Limited time offer — don't miss out!</p>
+      <a href="{% url 'accounts:register' %}" class="btn btn-saffron">
+        Claim Offer &nbsp;<i class="bi bi-gift-fill"></i>
+      </a>
+    </div>
+    <div class="offer-badge">
+      <div class="big">FREE</div>
+      <div class="small">DELIVERY</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════════ -->
+<div id="how-it-works" style="width:100%">
+  <div class="section">
+    <div class="section-header reveal">
+      <h2 class="section-title">How <span>FarmConnect</span> Works</h2>
+      <p class="section-sub">From field to fork in four simple steps.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-num">1</div>
+        <div class="step-icon">🔍</div>
+        <div class="step-title">Browse & Choose</div>
+        <div class="step-desc">Explore hundreds of farm-fresh products filtered by category, location, or price.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-num">2</div>
+        <div class="step-icon">🛒</div>
+        <div class="step-title">Add to Cart & Pay</div>
+        <div class="step-desc">Secure checkout powered by Razorpay. Pay in seconds with any UPI, card, or wallet.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-num">3</div>
+        <div class="step-icon">🚚</div>
+        <div class="step-title">Fast Delivery</div>
+        <div class="step-desc">Farmers dispatch within hours. Track your order live until it reaches your door.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-3">
+        <div class="step-num">4</div>
+        <div class="step-icon">⭐</div>
+        <div class="step-title">Review & Repeat</div>
+        <div class="step-desc">Rate your purchase, help other buyers, and earn loyalty rewards on every order.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FARMER SPOTLIGHT
+══════════════════════════════════════════ -->
+<div class="farmers-bg" id="farmers">
+  <div class="section">
+    <div class="section-header reveal">
+      <h2 class="section-title">Meet Our <span>Farmers</span></h2>
+      <p class="section-sub">Real people, real farms. Every seller is personally verified by our team.</p>
+    </div>
+    <div class="farmer-grid">
+      {% for farmer in top_farmers %}
+      <div class="farmer-card reveal">
+        <div class="farmer-avatar">{{ farmer.full_name|first }}</div>
+        <div class="farmer-name">{{ farmer.full_name }}</div>
+        <div class="farmer-loc"><i class="bi bi-geo-alt-fill"></i> Verified Farmer</div>
+        <span class="farmer-tag">{{ farmer.products.count }} Products</span>
+      </div>
+      {% empty %}
+      {% for letter in "ABCDE" %}
+      <div class="farmer-card reveal">
+        <div class="farmer-avatar">{{ letter }}</div>
+        <div class="farmer-name">Verified Farmer {{ letter }}</div>
+        <div class="farmer-loc"><i class="bi bi-geo-alt-fill"></i> Kerala, India</div>
+        <span class="farmer-tag">Fresh Produce</span>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+    <div class="farmers-footer reveal">
+      <a href="{% url 'accounts:register' %}" class="btn btn-green btn-lg">
+        Join as a Farmer &nbsp;<i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TESTIMONIALS
+══════════════════════════════════════════ -->
+<div style="width:100%">
+  <div class="section">
+    <div class="section-header reveal">
+      <h2 class="section-title">What Our <span>Customers</span> Say</h2>
+      <p class="section-sub">Thousands of happy families trust FarmConnect every week.</p>
+    </div>
+    <div class="testimonial-grid">
+      <div class="testimonial-card reveal">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"The mangoes arrived within 18 hours of ordering — absolutely the sweetest I've ever had. You can taste the difference when it's truly farm-direct."</p>
+        <div class="t-author">
+          <div class="t-avatar">😊</div>
+          <div>
+            <div class="t-name">Priya Menon</div>
+            <div class="t-loc">Kochi, Kerala</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Finally a platform where I know exactly who grew my vegetables. FarmConnect has completely changed how my family shops for groceries."</p>
+        <div class="t-author">
+          <div class="t-avatar">👨</div>
+          <div>
+            <div class="t-name">Arun Kumar</div>
+            <div class="t-loc">Bangalore, Karnataka</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="t-stars">★★★★☆</div>
+        <p class="t-quote">"As a farmer, I now earn 40% more per kilo by selling direct. The dashboard is incredibly easy to use. I highly recommend FarmConnect to every farmer."</p>
+        <div class="t-author">
+          <div class="t-avatar">🧑‍🌾</div>
+          <div>
+            <div class="t-name">Rajan Pillai</div>
+            <div class="t-loc">Palakkad — Farmer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP DOWNLOAD
+══════════════════════════════════════════ -->
+<div class="app-wrap">
+  <div class="app-inner reveal">
+    <div class="app-text">
+      <h3>Get the FarmConnect App</h3>
+      <p>Order fresh produce, track deliveries, and manage your farm — all from your phone.</p>
+    </div>
+    <div class="app-btns">
+      <a href="#" class="app-btn">
+        <span class="app-icon"><i class="bi bi-apple"></i></span>
+        <div>
+          <small>Download on the</small>
+          <strong>App Store</strong>
+        </div>
+      </a>
+      <a href="#" class="app-btn">
+        <span class="app-icon"><i class="bi bi-google-play"></i></span>
+        <div>
+          <small>Get it on</small>
+          <strong>Google Play</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="footer-main">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">🌾 FarmConnect</div>
+      <p class="footer-about">
+        Connecting farmers directly with consumers. Fresh produce, fair prices,
+        zero middlemen — building a sustainable food ecosystem across India.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="{% url 'products:list' %}">All Products</a></li>
+        <li><a href="{% url 'products:list' %}?category=vegetables">Vegetables</a></li>
+        <li><a href="{% url 'products:list' %}?category=fruits">Fruits</a></li>
+        <li><a href="{% url 'products:list' %}?category=grains">Grains &amp; Pulses</a></li>
+        <li><a href="{% url 'products:list' %}?category=dairy">Dairy &amp; Eggs</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Farmers</h4>
+      <ul>
+        <li><a href="{% url 'accounts:register' %}">Start Selling</a></li>
+        <li><a href="{% url 'accounts:login' %}">Farmer Login</a></li>
+        <li><a href="#">Seller Guide</a></li>
+        <li><a href="#">Pricing &amp; Fees</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Help</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contact Support</a></li>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+<div class="footer-bottom-bar">
+  <div class="footer-bottom-inner">
+    <span>© 2026 FarmConnect. All rights reserved.</span>
+    <span>Made with 🌾 for farmers &amp; food lovers across India</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Hamburger (simple toggle — wire up if needed)
+  document.querySelector('.hamburger')?.addEventListener('click', () => {
+    const links = document.querySelector('.navbar-links');
+    if (links) {
+      links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+      links.style.flexDirection = 'column';
+      links.style.position = 'absolute';
+      links.style.top = '68px';
+      links.style.left = '0';
+      links.style.right = '0';
+      links.style.background = '#fff';
+      links.style.padding = '1rem 2rem';
+      links.style.borderBottom = '1.5px solid var(--sand)';
+      links.style.boxShadow = '0 8px 24px rgba(0,0,0,.08)';
+      links.style.zIndex = '199';
+    }
+  });
+</script>
+</body>
+</html>
