@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import environ
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(DEBUG=(bool, False))
@@ -69,18 +70,18 @@ TEMPLATES = [
 WSGI_APPLICATION = "farmconnect.wsgi.application"
 
 # ── Database ──────────────────────────────────────────────────────────────────
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": env("DB_NAME", default="farmconnect_db"),
-        "USER": env("DB_USER", default="root"),
-        "PASSWORD": env("DB_PASSWORD", default=""),
-        "HOST": env("DB_HOST", default="127.0.0.1"),
-        "PORT": env("DB_PORT", default="3306"),
-        "OPTIONS": {"charset": "utf8mb4"},
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": "db.yivjtyjeppyfisfpsowx.supabase.co",
+        "PORT": "5432",
+        "OPTIONS": {"sslmode": "require"},
     }
 }
-
 # ── Auth ──────────────────────────────────────────────────────────────────────
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "/auth/login/"
