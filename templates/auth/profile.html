@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Profile – FarmConnect{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card p-4 text-center">
+        <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user.full_name|urlencode }}&background=2E7D32&color=fff&size=100{% endif %}"
+             class="rounded-circle mb-3 mx-auto" width="100" height="100"/>
+        <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+        <p class="text-muted mb-1">{{ user.email }}</p>
+        {% if user.phone %}<p class="text-muted small mb-1">{{ user.phone }}</p>{% endif %}
+        <span class="badge-role badge-{{ user.role }} mt-2 d-inline-block">{{ user.get_role_display }}</span>
+        <div class="text-muted small mt-3">Member since {{ user.date_joined|date:"F Y" }}</div>
+        <hr/>
+        <a href="{% url 'dashboard:home' %}" class="btn btn-fc w-100">Go to Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

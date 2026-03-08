@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – FarmConnect{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Admin Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link active" href="{% url 'adminpanel:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'adminpanel:user_list' %}"><i class="bi bi-people"></i> Users</a>
+        <a class="nav-link" href="{% url 'adminpanel:product_list' %}"><i class="bi bi-boxes"></i> Products</a>
+        <a class="nav-link" href="{% url 'adminpanel:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+      </nav>
+    </div>
+    <div class="col-md-10 p-4">
+      <h4 class="page-title mb-1">🛡️ Admin Dashboard</h4>
+      <p class="text-muted small mb-4">Platform overview</p>
+
+      <div class="row g-3 mb-4">
+        {% for label, value, color in platform_stats %}
+        <div class="col-6 col-md-2">
+          <div class="card stat-card p-3" style="border-color:{{ color }};">
+            <div class="text-muted small">{{ label }}</div>
+            <div class="fs-3 fw-800" style="color:{{ color }};">{{ value }}</div>
+          </div>
+        </div>
+        {% endfor %}
+        <div class="col-6 col-md-2"><div class="card stat-card p-3"><div class="text-muted small">Total Users</div><div class="fs-3 fw-800">{{ total_users }}</div></div></div>
+        <div class="col-6 col-md-2"><div class="card stat-card p-3" style="border-color:#1565C0;"><div class="text-muted small">Farmers</div><div class="fs-3 fw-800 text-primary">{{ total_farmers }}</div></div></div>
+        <div class="col-6 col-md-2"><div class="card stat-card p-3" style="border-color:#F57C00;"><div class="text-muted small">Consumers</div><div class="fs-3 fw-800" style="color:#F57C00;">{{ total_consumers }}</div></div></div>
+        <div class="col-6 col-md-2"><div class="card stat-card p-3" style="border-color:#9C27B0;"><div class="text-muted small">Products</div><div class="fs-3 fw-800" style="color:#9C27B0;">{{ total_products }}</div></div></div>
+        <div class="col-6 col-md-2"><div class="card stat-card p-3" style="border-color:#00796B;"><div class="text-muted small">Orders</div><div class="fs-3 fw-800" style="color:#00796B;">{{ total_orders }}</div></div></div>
+        <div class="col-6 col-md-2"><div class="card stat-card p-3" style="border-color:#F44336;"><div class="text-muted small">Pending</div><div class="fs-3 fw-800 text-danger">{{ pending_orders }}</div></div></div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card p-3">
+            <h6 class="fw-bold mb-3">Recent Users</h6>
+            <table class="table table-sm table-hover">
+              <thead class="table-light"><tr><th>Name</th><th>Role</th><th>Joined</th></tr></thead>
+              <tbody>
+                {% for u in recent_users %}
+                <tr>
+                  <td>{{ u.full_name }}</td>
+                  <td><span class="badge-role badge-{{ u.role }}">{{ u.get_role_display }}</span></td>
+                  <td class="text-muted small">{{ u.date_joined|date:"M d" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <a href="{% url 'adminpanel:user_list' %}" class="btn btn-sm btn-outline-secondary">View All Users</a>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card p-3">
+            <h6 class="fw-bold mb-3">Recent Orders</h6>
+            <table class="table table-sm table-hover">
+              <thead class="table-light"><tr><th>#</th><th>Customer</th><th>Status</th><th>₹</th></tr></thead>
+              <tbody>
+                {% for o in recent_orders %}
+                <tr>
+                  <td>#{{ o.pk }}</td>
+                  <td>{{ o.consumer.full_name }}</td>
+                  <td><span class="badge rounded-pill {% if o.status == 'delivered' %}bg-success{% elif o.status == 'pending' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">{{ o.get_status_display }}</span></td>
+                  <td>{{ o.total_amount }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <a href="{% url 'adminpanel:order_list' %}" class="btn btn-sm btn-outline-secondary">View All Orders</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

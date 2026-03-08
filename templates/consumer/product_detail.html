@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} – FarmConnect{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-md-5">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" class="img-fluid rounded-3 w-100" style="max-height:380px;object-fit:cover;" alt="{{ product.name }}"/>
+      {% else %}
+        <div class="d-flex align-items-center justify-content-center bg-light rounded-3" style="height:380px;font-size:6rem;">🌿</div>
+      {% endif %}
+    </div>
+    <div class="col-md-7">
+      <div class="mb-2">
+        <span class="badge" style="background:#E8F5E9;color:#2E7D32;">{{ product.category }}</span>
+      </div>
+      <h2 class="fw-800 mb-1">{{ product.name }}</h2>
+      <p class="text-muted mb-2">by <strong>{{ product.farmer.full_name }}</strong></p>
+      <div class="text-warning mb-3">{{ product.avg_rating }}★ <span class="text-muted small">({{ product.reviews.count }} reviews)</span></div>
+      <h3 style="color:#2E7D32;" class="fw-800">₹{{ product.price }}<span class="text-muted fs-6 fw-normal">/{{ product.unit }}</span></h3>
+      <p class="text-muted mt-3">{{ product.description }}</p>
+      <div class="mb-4 text-muted small">Stock available: {{ product.stock }} {{ product.unit }}</div>
+      {% if user.is_authenticated and user.is_consumer %}
+        <a href="{% url 'orders:add_to_cart' product.pk %}" class="btn btn-fc btn-lg px-5"><i class="bi bi-cart-plus me-2"></i>Add to Cart</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="mt-5">
+    <h5 class="fw-bold mb-4">Customer Reviews</h5>
+    {% if user.is_authenticated and user.is_consumer %}
+    <div class="card p-4 mb-4">
+      <h6 class="fw-bold mb-3">Leave a Review</h6>
+      <form method="post" action="{% url 'reviews:add' product.pk %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Rating</label>
+          <select name="rating" class="form-select" style="max-width:200px;">
+            <option value="5">⭐⭐⭐⭐⭐ 5 – Excellent</option>
+            <option value="4">⭐⭐⭐⭐ 4 – Good</option>
+            <option value="3">⭐⭐⭐ 3 – Average</option>
+            <option value="2">⭐⭐ 2 – Poor</option>
+            <option value="1">⭐ 1 – Terrible</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <textarea name="comment" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-fc">Submit Review</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% for review in reviews %}
+    <div class="card p-3 mb-3">
+      <div class="d-flex justify-content-between">
+        <span class="fw-semibold">{{ review.consumer.full_name }}</span>
+        <span class="text-warning">{{ review.rating }}★</span>
+      </div>
+      <p class="text-muted small mb-0 mt-1">{{ review.comment }}</p>
+      <div class="text-muted" style="font-size:.75rem;">{{ review.created_at|date:"M d, Y" }}</div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No reviews yet. Be the first to review!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

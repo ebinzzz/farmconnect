@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Products – Admin Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Admin Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'adminpanel:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'adminpanel:user_list' %}"><i class="bi bi-people"></i> Users</a>
+        <a class="nav-link active" href="{% url 'adminpanel:product_list' %}"><i class="bi bi-boxes"></i> Products</a>
+        <a class="nav-link" href="{% url 'adminpanel:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+      </nav>
+    </div>
+    <div class="col-md-10 p-4">
+      <h4 class="page-title mb-4">📦 All Products</h4>
+      <div class="card p-3">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>#</th><th>Product</th><th>Farmer</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+              <tr>
+                <td>{{ p.pk }}</td>
+                <td class="fw-semibold">{{ p.name }}</td>
+                <td>{{ p.farmer.full_name }}</td>
+                <td>{{ p.category }}</td>
+                <td>₹{{ p.price }}/{{ p.unit }}</td>
+                <td>{{ p.stock }}</td>
+                <td>
+                  {% if p.is_available %}
+                    <span class="badge bg-success">Available</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Unlisted</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="7" class="text-center text-muted py-4">No products found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Register – FarmConnect{% endblock %}
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background: linear-gradient(135deg,#E8F5E9 0%,#C8E6C9 100%);">
+  <div class="card p-4 p-md-5" style="max-width:480px;width:100%;">
+    <div class="text-center mb-4">
+      <div style="font-size:2.5rem;">🌱</div>
+      <h2 class="mb-0" style="font-weight:800;color:#2E7D32;">Create Account</h2>
+      <p class="text-muted small">Join FarmConnect today</p>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Full Name</label>
+        {{ form.full_name }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Email</label>
+        {{ form.email }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Phone</label>
+        {{ form.phone }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">I am a…</label>
+        {{ form.role }}
+      </div>
+      <div class="row">
+        <div class="col-6 mb-3">
+          <label class="form-label fw-semibold">Password</label>
+          {{ form.password1 }}
+        </div>
+        <div class="col-6 mb-3">
+          <label class="form-label fw-semibold">Confirm</label>
+          {{ form.password2 }}
+        </div>
+      </div>
+      {% if form.errors %}
+        <div class="alert alert-danger py-2 small">
+          {% for field in form %}{% for error in field.errors %}<div>{{ error }}</div>{% endfor %}{% endfor %}
+        </div>
+      {% endif %}
+      <button type="submit" class="btn btn-fc w-100 py-2">Create Account</button>
+    </form>
+    <hr class="my-3"/>
+    <p class="text-center text-muted small mb-0">
+      Already have an account? <a href="{% url 'accounts:login' %}" class="fw-bold" style="color:#2E7D32;">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

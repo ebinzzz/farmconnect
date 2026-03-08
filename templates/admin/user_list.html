@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Users – Admin Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Admin Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'adminpanel:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link active" href="{% url 'adminpanel:user_list' %}"><i class="bi bi-people"></i> Users</a>
+        <a class="nav-link" href="{% url 'adminpanel:product_list' %}"><i class="bi bi-boxes"></i> Products</a>
+        <a class="nav-link" href="{% url 'adminpanel:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+      </nav>
+    </div>
+    <div class="col-md-10 p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="page-title mb-0">👥 User Management</h4>
+        <div class="d-flex gap-2">
+          <a href="?role=farmer" class="btn btn-sm {% if role_filter == 'farmer' %}btn-fc{% else %}btn-outline-secondary{% endif %}">Farmers</a>
+          <a href="?role=consumer" class="btn btn-sm {% if role_filter == 'consumer' %}btn-fc{% else %}btn-outline-secondary{% endif %}">Consumers</a>
+          <a href="?" class="btn btn-sm btn-outline-secondary">All</a>
+        </div>
+      </div>
+      <div class="card p-3">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td>{{ u.pk }}</td>
+                <td class="fw-semibold">{{ u.full_name }}</td>
+                <td>{{ u.email }}</td>
+                <td><span class="badge-role badge-{{ u.role }}">{{ u.get_role_display }}</span></td>
+                <td>
+                  {% if u.is_active %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-danger">Inactive</span>
+                  {% endif %}
+                </td>
+                <td class="text-muted small">{{ u.date_joined|date:"M d, Y" }}</td>
+                <td>
+                  <form method="post" action="{% url 'adminpanel:toggle_user' u.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                      {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="7" class="text-center text-muted py-4">No users found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

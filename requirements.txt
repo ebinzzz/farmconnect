@@ -1,0 +1,8 @@
+Django>=4.2,<5.0
+pymysql
+Pillow>=11.0
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2024.2
+django-environ>=0.11.2
+whitenoise>=6.6.0
+gunicorn>=21.2.0

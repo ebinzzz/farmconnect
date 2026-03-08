@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Orders – Farmer Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Farmer Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+        <a class="nav-link active" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+        <a class="nav-link" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+        <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+      </nav>
+    </div>
+    <div class="col-md-10 p-4">
+      <h4 class="page-title mb-4">🛍️ All Orders</h4>
+      
+      <!-- Filter Form -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Status</label>
+              <select name="status" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                {% for s, label in status_choices %}
+                <option value="{{ s }}" {% if request.GET.status == s %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Order Date</label>
+              <input type="date" name="date" class="form-control form-control-sm" value="{{ request.GET.date }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Delivery Date</label>
+              <input type="date" name="delivery_date" class="form-control form-control-sm" value="{{ request.GET.delivery_date }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="d-flex gap-2 w-100">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1">Filter</button>
+                <a href="{% url 'farmers:order_list' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% regroup orders by created_at.date as orders_by_date %}
+
+      {% for date_group in orders_by_date %}
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-event"></i> {{ date_group.grouper|date:"l, F d, Y" }}</h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>#</th><th>Customer</th><th>Amount</th><th>Status</th><th>Delivery Date</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {% for o in date_group.list %}
+                <tr>
+                  <td>#{{ o.pk }}</td>
+                  <td>{{ o.consumer.full_name }}</td>
+                  <td>₹{{ o.total_amount }}</td>
+                  <td>
+                    <span class="badge rounded-pill
+                      {% if o.status == 'delivered' %}bg-success
+                      {% elif o.status == 'pending' %}bg-warning text-dark
+                      {% elif o.status == 'dispatched' %}bg-info text-dark
+                      {% elif o.status == 'cancelled' %}bg-danger
+                      {% else %}bg-primary{% endif %}">
+                      {{ o.get_status_display }}
+                    </span>
+                  </td>
+                  <td class="text-muted small">
+                    {% if o.expected_delivery_date %}
+                      {{ o.expected_delivery_date|date:"M d, Y" }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{% url 'farmers:order_detail' o.pk %}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i> View
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center text-muted py-5">
+        <div style="font-size: 3rem;">📭</div>
+        <p>No orders found matching your criteria.</p>
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

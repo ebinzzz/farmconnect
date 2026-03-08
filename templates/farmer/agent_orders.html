@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Orders for {{ agent.name }} – Farmer Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="col-12 d-md-none p-3">
+      <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainSidebar">
+        <i class="bi bi-list"></i> Menu
+      </button>
+    </div>
+
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4"><p class="text-muted small fw-semibold text-uppercase">Farmer Panel</p></div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+        <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+        <a class="nav-link active" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+        <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+      </nav>
+    </div>
+
+    <!-- Mobile Offcanvas Sidebar -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mainSidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Farmer Panel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <nav class="nav flex-column">
+          <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+          <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+          <a class="nav-link active" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+          <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="col-md-10 p-4">
+      <div class="mb-4">
+        <a href="{% url 'farmers:agent_list' %}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to Agents</a>
+      </div>
+      <h4 class="page-title mb-4">📦 Orders assigned to {{ agent.name }}</h4>
+      
+      <!-- Filter Form -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Status</label>
+              <select name="status" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                {% for s, label in status_choices %}
+                <option value="{{ s }}" {% if request.GET.status == s %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Date</label>
+              <input type="date" name="date" class="form-control form-control-sm" value="{{ request.GET.date }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="d-flex gap-2 w-100">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1">Filter</button>
+                <a href="{% url 'farmers:agent_orders' agent.pk %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% regroup orders by created_at.date as orders_by_date %}
+
+      {% for date_group in orders_by_date %}
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-event"></i> {{ date_group.grouper|date:"l, F d, Y" }}</h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>Order #</th><th>Customer</th><th>Address</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                {% for o in date_group.list %}
+                <tr>
+                  <td>#{{ o.pk }}</td>
+                  <td>{{ o.consumer.full_name }}</td>
+                  <td class="small text-truncate" style="max-width: 200px;">{{ o.delivery_address }}</td>
+                  <td>
+                    <span class="badge rounded-pill
+                      {% if o.status == 'delivered' %}bg-success
+                      {% elif o.status == 'dispatched' %}bg-info text-dark
+                      {% else %}bg-secondary{% endif %}">
+                      {{ o.get_status_display }}
+                    </span>
+                  </td>
+                  <td>
+                    <a href="{% url 'farmers:order_detail' o.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center text-muted py-5">
+        <div style="font-size: 3rem;">📭</div>
+        <p>No orders assigned matching criteria.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

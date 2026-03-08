@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.pk }} – Farmer Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="col-12 d-md-none p-3">
+      <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainSidebar">
+        <i class="bi bi-list"></i> Menu
+      </button>
+    </div>
+
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Farmer Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+        <a class="nav-link active" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+        <a class="nav-link" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+        <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+      </nav>
+    </div>
+
+    <!-- Mobile Offcanvas Sidebar -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mainSidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Farmer Panel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <nav class="nav flex-column">
+          <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+          <a class="nav-link active" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+          <a class="nav-link" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+          <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="col-md-10 p-4">
+      <div class="mb-4">
+        <a href="{% url 'farmers:order_list' %}" class="text-decoration-none text-muted">
+          <i class="bi bi-arrow-left"></i> Back to Orders
+        </a>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="page-title mb-0">Order #{{ order.pk }}</h4>
+        <span class="badge rounded-pill fs-6
+          {% if order.status == 'delivered' %}bg-success
+          {% elif order.status == 'pending' %}bg-warning text-dark
+          {% elif order.status == 'packed' %}bg-secondary
+          {% elif order.status == 'dispatched' %}bg-info text-dark
+          {% elif order.status == 'cancelled' %}bg-danger
+          {% else %}bg-primary{% endif %}">
+          {{ order.get_status_display }}
+        </span>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Order Items</div>
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in order.items.all %}
+                  <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">₹{{ item.price }}</td>
+                    <td class="text-end">₹{{ item.get_total_price }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                  <tr>
+                    <td colspan="3" class="text-end fw-bold">Grand Total:</td>
+                    <td class="text-end fw-bold">₹{{ order.total_amount }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Update Status</div>
+            <div class="card-body">
+              <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label class="form-label">Status</label>
+                  <select name="status" id="statusSelect" class="form-select" onchange="toggleDeliveryFields()">
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Delivery Info Section -->
+                <div id="deliveryFields" style="display:none;" class="border-top pt-3 mt-3">
+                  <h6 class="small fw-bold mb-3">Delivery Information</h6>
+                  
+                  <div class="mb-3">
+                    <label class="form-label small">Delivery Type</label>
+                    <select name="delivery_type" id="deliveryType" class="form-select form-select-sm" onchange="toggleAgentFields()">
+                      <option value="">Select Type...</option>
+                      <option value="internal">Internal Agent</option>
+                      <option value="external">External Courier</option>
+                    </select>
+                  </div>
+
+                  <!-- Internal Agent Fields -->
+                  <div id="internalFields" style="display:none;">
+                    <div class="mb-3">
+                      <label class="form-label small">Select Agent</label>
+                      <select name="internal_agent" class="form-select form-select-sm">
+                        <option value="">Choose Agent...</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.pk }}">{{ agent.name }} ({{ agent.phone }})</option>
+                        {% endfor %}
+                      </select>
+                      <div class="form-text"><a href="{% url 'farmers:agent_add' %}" class="text-decoration-none small">+ Add New Agent</a></div>
+                    </div>
+                  </div>
+
+                  <!-- External Courier Fields -->
+                  <div id="externalFields" style="display:none;">
+                    <input type="text" name="external_service_name" class="form-control form-control-sm mb-2" placeholder="Service Name (e.g. FedEx)">
+                    <input type="text" name="tracking_code" class="form-control form-control-sm mb-2" placeholder="Tracking Code">
+                    <input type="url" name="tracking_link" class="form-control form-control-sm mb-2" placeholder="Tracking Link">
+                    <input type="date" name="expected_delivery_date" class="form-control form-control-sm mb-2" title="Expected Delivery Date">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Update Status</button>
+              </form>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Customer Details</div>
+            <div class="card-body">
+              <p class="mb-1"><strong>Name:</strong> {{ order.consumer.full_name }}</p>
+              <p class="mb-1"><strong>Email:</strong> {{ order.consumer.email }}</p>
+              <p class="mb-0"><strong>Date:</strong> {{ order.created_at|date:"F d, Y H:i" }}</p>
+            </div>
+          </div>
+
+          {% if order.delivery_type %}
+          <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Dispatch Details</div>
+            <div class="card-body">
+              {% if order.delivery_type == 'internal' %}
+                <p class="mb-1"><strong>Agent:</strong> {{ order.internal_agent.name }}</p>
+                <p class="mb-0"><strong>Phone:</strong> {{ order.internal_agent.phone }}</p>
+              {% else %}
+                <p class="mb-1"><strong>Service:</strong> {{ order.external_service_name }}</p>
+                <p class="mb-1"><strong>Tracking:</strong> {{ order.tracking_code }}</p>
+                <p class="mb-0"><a href="{{ order.tracking_link }}" target="_blank">Track Package</a></p>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if order.payment %}
+          <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Payment Information</div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span>Status:</span>
+                <span class="badge {% if order.payment.status == 'success' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                  {{ order.payment.status|title }}
+                </span>
+              </div>
+              <p class="mb-1"><strong>ID:</strong> {{ order.payment.razorpay_payment_id|default:"-" }}</p>
+              <p class="mb-0"><strong>Amount:</strong> ₹{{ order.payment.amount }}</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDeliveryFields() {
+  const status = document.getElementById('statusSelect').value;
+  const deliveryFields = document.getElementById('deliveryFields');
+  // Show fields only when status is 'dispatched'
+  deliveryFields.style.display = (status === 'dispatched') ? 'block' : 'none';
+}
+
+function toggleAgentFields() {
+  const type = document.getElementById('deliveryType').value;
+  document.getElementById('internalFields').style.display = (type === 'internal') ? 'block' : 'none';
+  document.getElementById('externalFields').style.display = (type === 'external') ? 'block' : 'none';
+}
+
+// Run on load in case of page refresh
+document.addEventListener('DOMContentLoaded', toggleDeliveryFields);
+</script>
+{% endblock %}

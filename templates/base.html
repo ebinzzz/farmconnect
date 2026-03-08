@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}FarmConnect{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --fc-green: #2E7D32;
+      --fc-green-light: #4CAF50;
+      --fc-green-pale: #E8F5E9;
+      --fc-orange: #F57C00;
+    }
+    body { font-family: 'Nunito', sans-serif; background: #f9fafb; }
+    .navbar-brand { font-weight: 800; font-size: 1.4rem; color: var(--fc-green) !important; }
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+    .nav-link { font-weight: 600; }
+    .btn-fc { background: var(--fc-green); color: #fff; border: none; font-weight: 700; }
+    .btn-fc:hover { background: var(--fc-green-light); color: #fff; }
+    .badge-role { font-size: .7rem; padding: .25em .6em; border-radius: 20px; }
+    .badge-farmer   { background: var(--fc-green-pale); color: var(--fc-green); }
+    .badge-consumer { background: #E3F2FD; color: #1565C0; }
+    .badge-admin    { background: #FFF3E0; color: var(--fc-orange); }
+    .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .sidebar { min-height: 100vh; background: #fff; border-right: 1px solid #e9ecef; padding: 1.5rem 0; }
+    .sidebar .nav-link { color: #555; padding: .6rem 1.5rem; border-radius: 0 30px 30px 0; margin-right: 1rem; }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: var(--fc-green-pale); color: var(--fc-green); font-weight: 700; }
+    .sidebar .nav-link i { width: 1.4rem; }
+    .stat-card { border-left: 4px solid var(--fc-green); }
+    .page-title { font-weight: 800; color: #1a1a1a; }
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="{% url 'dashboard:home' %}">🌾 FarmConnect</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Browse</a>
+          </li>
+          {% if user.is_consumer %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'orders:cart' %}"><i class="bi bi-cart3"></i> Cart</a>
+          </li>
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+              <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user.full_name|urlencode }}&background=2E7D32&color=fff&size=32{% endif %}"
+                   class="rounded-circle" width="30" height="30"/>
+              {{ user.full_name }}
+              <span class="badge-role badge-{{ user.role }}">{{ user.get_role_display }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+              <li><hr class="dropdown-divider"/></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
+          <li class="nav-item"><a class="btn btn-fc btn-sm px-3" href="{% url 'accounts:register' %}">Register</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Flash Messages -->
+{% if messages %}
+<div class="toast-container">
+  {% for msg in messages %}
+  <div class="toast show align-items-center text-white bg-{% if msg.tags == 'error' %}danger{% elif msg.tags == 'warning' %}warning text-dark{% elif msg.tags == 'info' %}info{% else %}success{% endif %} border-0 mb-2" role="alert">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">{{ msg }}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content -->
+{% block content %}{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Auto-dismiss toasts
+  document.querySelectorAll('.toast').forEach(t => {
+    setTimeout(() => new bootstrap.Toast(t, {autohide:true, delay:4000}).hide(), 300);
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

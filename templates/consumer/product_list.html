@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Browse Products – FarmConnect{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="col-12 d-md-none p-3">
+      <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainSidebar">
+        <i class="bi bi-list"></i> Menu
+      </button>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <div class="col-md-2 sidebar d-none d-md-block bg-light border-end min-vh-100 pt-3">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Menu</p>
+      </div>
+      <nav class="nav flex-column">
+        {% if user.is_farmer %}
+          <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+          <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+          <a class="nav-link" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+          <a class="nav-link active" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+        {% else %}
+          <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          <a class="nav-link active" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Browse Products</a>
+          <a class="nav-link" href="{% url 'orders:cart' %}"><i class="bi bi-cart"></i> My Cart</a>
+          <a class="nav-link" href="{% url 'orders:order_list' %}"><i class="bi bi-bag"></i> My Orders</a>
+          <a class="nav-link" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Profile</a>
+        {% endif %}
+      </nav>
+    </div>
+
+    <!-- Mobile Offcanvas Sidebar -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mainSidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <nav class="nav flex-column">
+          {% if user.is_farmer %}
+            <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+            <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+            <a class="nav-link" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+            <a class="nav-link active" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+          {% else %}
+            <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="nav-link active" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Browse Products</a>
+            <a class="nav-link" href="{% url 'orders:cart' %}"><i class="bi bi-cart"></i> My Cart</a>
+            <a class="nav-link" href="{% url 'orders:order_list' %}"><i class="bi bi-bag"></i> My Orders</a>
+            <a class="nav-link" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Profile</a>
+          {% endif %}
+        </nav>
+      </div>
+    </div>
+
+    <div class="col-md-10 p-4">
+  <h4 class="page-title mb-4">🌿 Fresh from the Farm</h4>
+  <!-- Search bar -->
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-5">
+      <input type="text" name="q" class="form-control" placeholder="Search products…" value="{{ query }}"/>
+    </div>
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <input type="number" name="min_price" class="form-control" placeholder="Min ₹" value="{{ request.GET.min_price }}"/>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-fc w-100">Search</button>
+    </div>
+  </form>
+
+  {% if products %}
+  <div class="row g-3">
+    {% for p in products %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card h-100">
+        {% if p.image %}
+          <img src="{{ p.image.url }}" class="card-img-top" style="height:160px;object-fit:cover;" alt="{{ p.name }}"/>
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center bg-light" style="height:160px;font-size:3rem;">🌿</div>
+        {% endif %}
+        <div class="card-body">
+          <h6 class="fw-bold mb-1">{{ p.name }}</h6>
+          <p class="text-muted small mb-1">by {{ p.farmer.full_name }}</p>
+          <div class="d-flex align-items-center justify-content-between mt-2">
+            <span class="fw-800" style="color:#2E7D32;font-size:1.1rem;">₹{{ p.price }}<span class="text-muted fw-normal small">/{{ p.unit }}</span></span>
+            <span class="text-warning small">{{ p.avg_rating }}★</span>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-0 pb-3">
+          <div class="d-flex gap-2">
+            <a href="{% url 'products:detail' p.pk %}" class="btn btn-sm btn-outline-secondary flex-fill">Details</a>
+            {% if user.is_authenticated and user.is_consumer %}
+              <a href="{% url 'orders:add_to_cart' p.pk %}" class="btn btn-sm btn-fc flex-fill"><i class="bi bi-cart-plus"></i></a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="text-center py-5 text-muted">
+      <div style="font-size:4rem;">🌾</div>
+      <p>No products found. Try a different search.</p>
+    </div>
+  {% endif %}
+</div>
+  </div>
+</div>
+{% endblock %}

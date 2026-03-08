@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ action }} Agent – Farmer Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="col-12 d-md-none p-3">
+      <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainSidebar">
+        <i class="bi bi-list"></i> Menu
+      </button>
+    </div>
+
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Farmer Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+        <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+        <a class="nav-link active" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+        <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+      </nav>
+    </div>
+
+    <!-- Mobile Offcanvas Sidebar -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mainSidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Farmer Panel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <nav class="nav flex-column">
+          <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+          <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+          <a class="nav-link active" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+          <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="col-md-10 p-4">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white">
+              <h5 class="mb-0">{{ action }} Delivery Agent</h5>
+            </div>
+            <div class="card-body">
+              <form method="post">
+                {% csrf_token %}
+                
+                {% if action == "Add" %}
+                <div class="mb-3">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Phone Number</label>
+                  <input type="text" name="phone" class="form-control" required>
+                </div>
+                <div class="mb-3"><label class="form-label">Email (Login ID)</label><input type="email" name="email" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+                {% else %}
+                  {{ form|crispy }}
+                {% endif %}
+
+                <div class="d-flex gap-2 mt-3">
+                  <button type="submit" class="btn btn-primary flex-grow-1">Save Agent</button>
+                  <a href="{% url 'farmers:agent_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

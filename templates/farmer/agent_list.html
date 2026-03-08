@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Delivery Agents – Farmer Panel{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="col-12 d-md-none p-3">
+      <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainSidebar">
+        <i class="bi bi-list"></i> Menu
+      </button>
+    </div>
+
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="px-3 mb-4">
+        <p class="text-muted small fw-semibold text-uppercase">Farmer Panel</p>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+        <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+        <a class="nav-link active" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+        <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+      </nav>
+    </div>
+
+    <!-- Mobile Offcanvas Sidebar -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mainSidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Farmer Panel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <nav class="nav flex-column">
+          <a class="nav-link" href="{% url 'farmers:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          <a class="nav-link" href="{% url 'farmers:product_add' %}"><i class="bi bi-plus-circle"></i> Add Product</a>
+          <a class="nav-link" href="{% url 'farmers:order_list' %}"><i class="bi bi-bag"></i> Orders</a>
+          <a class="nav-link active" href="{% url 'farmers:agent_list' %}"><i class="bi bi-truck"></i> Delivery Agents</a>
+          <a class="nav-link" href="{% url 'products:list' %}"><i class="bi bi-shop"></i> Marketplace</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="col-md-10 p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="page-title mb-0">🚚 Delivery Agents</h4>
+        <a href="{% url 'farmers:agent_add' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Agent</a>
+      </div>
+      <div class="card p-3">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>Name</th><th>Phone</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {% for agent in agents %}
+              <tr>
+                <td>{{ agent.name }}</td>
+                <td>{{ agent.phone }}</td>
+                <td>
+                  <a href="{% url 'farmers:agent_orders' agent.pk %}" class="btn btn-sm btn-outline-primary">Orders</a>
+                  <a href="{% url 'farmers:agent_edit' agent.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <form action="{% url 'farmers:agent_delete' agent.pk %}" method="post" class="d-inline" onsubmit="return confirm('Delete this agent?');">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-4">No agents found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
