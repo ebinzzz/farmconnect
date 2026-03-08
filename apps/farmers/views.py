@@ -8,16 +8,15 @@ from django.db.models import Sum, Count
 from django.forms import modelform_factory
 from apps.products.models import Product, Category
 from apps.orders.models import Order, OrderItem, DeliveryAgent
-from .forms import ProductForm
+from .forms import ProductForm, CategoryForm
 from .decorators import farmer_required
 
 
 @login_required
 def dashboard(request):
-    # Dispatch based on role to prevent redirect loops
-    if getattr(request.user, 'role', None) == 'agent':
+    if getattr(request.user, "role", None) == "agent":
         return redirect("orders:agent_dashboard")
-    if not getattr(request.user, 'is_farmer', False):
+    if not getattr(request.user, "is_farmer", False):
         return redirect("products:list")
 
     farmer   = request.user
@@ -67,6 +66,44 @@ def product_delete(request, pk):
         product.delete()
         messages.success(request, "Product removed.")
     return redirect("farmers:dashboard")
+
+
+@farmer_required
+def category_list(request):
+    categories = Category.objects.filter(farmer=request.user)
+    return render(request, "farmer/category_list.html", {"categories": categories})
+
+
+@farmer_required
+def category_add(request):
+    form = CategoryForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        category = form.save(commit=False)
+        category.farmer = request.user
+        category.save()
+        messages.success(request, "Category created.")
+        return redirect("farmers:category_list")
+    return render(request, "farmer/category_form.html", {"form": form, "action": "Add"})
+
+
+@farmer_required
+def category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk, farmer=request.user)
+    form = CategoryForm(request.POST or None, instance=category)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Category updated.")
+        return redirect("farmers:category_list")
+    return render(request, "farmer/category_form.html", {"form": form, "action": "Edit"})
+
+
+@farmer_required
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk, farmer=request.user)
+    if request.method == "POST":
+        category.delete()
+        messages.success(request, "Category deleted.")
+    return redirect("farmers:category_list")
 
 
 @farmer_required
@@ -126,7 +163,7 @@ def order_detail(request, pk):
 
     return render(request, "farmer/order_detail.html", {
         "order": order,
-        "status_choices": Order._meta.get_field('status').choices,
+        "status_choices": Order._meta.get_field("status").choices,
         "agents": agents
     })
 
@@ -155,7 +192,7 @@ def agent_add(request):
                 email=email,
                 password=make_password(password),
                 full_name=name,
-                role='agent',
+                role="agent",
                 is_active=True
             )
             DeliveryAgent.objects.create(

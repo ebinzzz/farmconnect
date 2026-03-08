@@ -5,12 +5,14 @@ Product listings created by Farmers
 
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    farmer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categories", null=True, blank=True)
+    name = models.CharField(max_length=100)
     icon = models.CharField(max_length=10, default="🌿")
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -19,6 +21,11 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class Product(models.Model):

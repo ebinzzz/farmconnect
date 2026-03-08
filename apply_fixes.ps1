@@ -564,6 +564,323 @@ document.addEventListener("DOMContentLoaded", toggleDeliveryFields);
 '@
 Write-Host "[6/6] templates/farmer/order_detail.html" -ForegroundColor Green
 
+# ── 7. farmers/forms.py ──────────────────────────────────────────────────────
+Set-Content -Path "apps\farmers\forms.py" -Value @'
+from django import forms
+from apps.products.models import Product, Category
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name"]
+        widgets = {
+            "name":        forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+
+class ProductForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        farmer = kwargs.pop("farmer", None)
+        super().__init__(*args, **kwargs)
+        if farmer:
+            self.fields["category"].queryset = Category.objects.filter(farmer=farmer)
+
+    class Meta:
+        model = Product
+        fields = ["name", "category", "description", "price", "unit", "stock", "image", "is_available"]
+        widgets = {
+            "name":        forms.TextInput(attrs={"class": "form-control"}),
+            "category":    forms.Select(attrs={"class": "form-select"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "price":       forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "unit":        forms.Select(attrs={"class": "form-select"}),
+            "stock":       forms.NumberInput(attrs={"class": "form-control"}),
+            "image":       forms.FileInput(attrs={"class": "form-control"}),
+            "is_available": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+'@
+Write-Host "[7/9] farmers/forms.py" -ForegroundColor Green
+
+# ── 8. farmers/views.py ──────────────────────────────────────────────────────
+Set-Content -Path "apps\farmers\views.py" -Value @'
+"""farmers/views.py – Farmer dashboard + product management"""
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
+from django.contrib import messages
+from django.db.models import Sum, Count
+from django.forms import modelform_factory
+from apps.products.models import Product, Category
+from apps.orders.models import Order, OrderItem, DeliveryAgent
+from .forms import ProductForm, CategoryForm
+from .decorators import farmer_required
+
+
+@login_required
+def dashboard(request):
+    if getattr(request.user, "role", None) == "agent":
+        return redirect("orders:agent_dashboard")
+    if not getattr(request.user, "is_farmer", False):
+        return redirect("products:list")
+
+    farmer   = request.user
+    products = Product.objects.filter(farmer=farmer)
+    order_ids = OrderItem.objects.filter(product__farmer=farmer).values_list("order_id", flat=True)
+    orders   = Order.objects.filter(pk__in=order_ids)
+    total_sales = orders.filter(status=Order.DELIVERED).aggregate(
+        total=Sum("total_amount"))["total"] or 0
+    pending_count = orders.filter(status=Order.PENDING).count()
+
+    return render(request, "farmer/dashboard.html", {
+        "products": products,
+        "orders": orders[:5],
+        "total_sales": total_sales,
+        "pending_count": pending_count,
+        "product_count": products.count(),
+    })
+
+
+@farmer_required
+def product_add(request):
+    form = ProductForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        product = form.save(commit=False)
+        product.farmer = request.user
+        product.save()
+        messages.success(request, f"'{product.name}' listed successfully! 🌾")
+        return redirect("farmers:dashboard")
+    return render(request, "farmer/product_form.html", {"form": form, "action": "Add"})
+
+
+@farmer_required
+def product_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk, farmer=request.user)
+    form = ProductForm(request.POST or None, request.FILES or None, instance=product)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Product updated.")
+        return redirect("farmers:dashboard")
+    return render(request, "farmer/product_form.html", {"form": form, "action": "Edit"})
+
+
+@farmer_required
+def product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk, farmer=request.user)
+    if request.method == "POST":
+        product.delete()
+        messages.success(request, "Product removed.")
+    return redirect("farmers:dashboard")
+
+
+@farmer_required
+def category_list(request):
+    categories = Category.objects.filter(farmer=request.user)
+    return render(request, "farmer/category_list.html", {"categories": categories})
+
+
+@farmer_required
+def category_add(request):
+    form = CategoryForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        category = form.save(commit=False)
+        category.farmer = request.user
+        category.save()
+        messages.success(request, "Category created.")
+        return redirect("farmers:category_list")
+    return render(request, "farmer/category_form.html", {"form": form, "action": "Add"})
+
+
+@farmer_required
+def category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk, farmer=request.user)
+    form = CategoryForm(request.POST or None, instance=category)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Category updated.")
+        return redirect("farmers:category_list")
+    return render(request, "farmer/category_form.html", {"form": form, "action": "Edit"})
+
+
+@farmer_required
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk, farmer=request.user)
+    if request.method == "POST":
+        category.delete()
+        messages.success(request, "Category deleted.")
+    return redirect("farmers:category_list")
+
+
+@farmer_required
+def order_list(request):
+    order_ids = OrderItem.objects.filter(product__farmer=request.user).values_list("order_id", flat=True)
+    orders = Order.objects.filter(pk__in=order_ids).order_by("-created_at")
+
+    # Filtering
+    status = request.GET.get("status")
+    date_param = request.GET.get("date")
+    delivery_date_param = request.GET.get("delivery_date")
+
+    if status:
+        orders = orders.filter(status=status)
+    if date_param:
+        orders = orders.filter(created_at__date=date_param)
+    if delivery_date_param:
+        orders = orders.filter(expected_delivery_date=delivery_date_param)
+
+    return render(request, "farmer/order_list.html", {
+        "orders": orders,
+        "status_choices": Order.STATUS_CHOICES
+    })
+
+
+@farmer_required
+def order_detail(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    # Ensure the farmer has items in this order before showing it
+    if not OrderItem.objects.filter(order=order, product__farmer=request.user).exists():
+        messages.error(request, "You are not authorized to view this order.")
+        return redirect("farmers:order_list")
+
+    agents = DeliveryAgent.objects.filter(farmer=request.user)
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        if new_status:
+            order.status = new_status
+            
+            # Capture delivery details if dispatched
+            if new_status == Order.DISPATCHED:
+                order.delivery_type = request.POST.get("delivery_type")
+                if order.delivery_type == "internal":
+                    agent_id = request.POST.get("internal_agent")
+                    if agent_id:
+                        order.internal_agent_id = agent_id
+                elif order.delivery_type == "external":
+                    order.external_service_name = request.POST.get("external_service_name")
+                    order.tracking_link = request.POST.get("tracking_link")
+                    order.tracking_code = request.POST.get("tracking_code")
+                    order.expected_delivery_date = request.POST.get("expected_delivery_date") or None
+
+            order.save()
+            messages.success(request, f"Order status updated to {order.get_status_display()}.")
+            return redirect("farmers:order_detail", pk=pk)
+
+    return render(request, "farmer/order_detail.html", {
+        "order": order,
+        "status_choices": Order._meta.get_field("status").choices,
+        "agents": agents
+    })
+
+
+# ── Agent Management ──────────────────────────────────────────────────────────
+
+@farmer_required
+def agent_list(request):
+    agents = DeliveryAgent.objects.filter(farmer=request.user)
+    return render(request, "farmer/agent_list.html", {"agents": agents})
+
+
+@farmer_required
+def agent_add(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        
+        User = get_user_model()
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists.")
+        else:
+            user = User.objects.create(
+                email=email,
+                password=make_password(password),
+                full_name=name,
+                role="agent",
+                is_active=True
+            )
+            DeliveryAgent.objects.create(
+                farmer=request.user, user=user, name=name, phone=phone
+            )
+            messages.success(request, "Delivery agent created with login access.")
+            return redirect("farmers:agent_list")
+    return render(request, "farmer/agent_form.html", {"action": "Add"})
+
+
+@farmer_required
+def agent_edit(request, pk):
+    agent = get_object_or_404(DeliveryAgent, pk=pk, farmer=request.user)
+    AgentForm = modelform_factory(DeliveryAgent, fields=("name", "phone"))
+    form = AgentForm(request.POST or None, instance=agent)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Agent updated.")
+        return redirect("farmers:agent_list")
+    return render(request, "farmer/agent_form.html", {"form": form, "action": "Edit"})
+
+
+@farmer_required
+def agent_delete(request, pk):
+    agent = get_object_or_404(DeliveryAgent, pk=pk, farmer=request.user)
+    if request.method == "POST":
+        agent.delete()
+        messages.success(request, "Agent removed.")
+    return redirect("farmers:agent_list")
+
+
+@farmer_required
+def agent_orders(request, pk):
+    agent = get_object_or_404(DeliveryAgent, pk=pk, farmer=request.user)
+    orders = Order.objects.filter(internal_agent=agent).order_by("-created_at")
+
+    # Filtering
+    status = request.GET.get("status")
+    date_param = request.GET.get("date")
+
+    if status:
+        orders = orders.filter(status=status)
+    if date_param:
+        orders = orders.filter(created_at__date=date_param)
+
+    return render(request, "farmer/agent_orders.html", {
+        "agent": agent,
+        "orders": orders,
+        "status_choices": Order.STATUS_CHOICES
+    })
+'@
+Write-Host "[8/9] farmers/views.py" -ForegroundColor Green
+
+# ── 9. farmers/urls.py ───────────────────────────────────────────────────────
+Set-Content -Path "apps\farmers\urls.py" -Value @'
+from django.urls import path
+from . import views
+
+app_name = "farmers"
+
+urlpatterns = [
+    path("dashboard/",           views.dashboard,      name="dashboard"),
+    path("products/add/",        views.product_add,    name="product_add"),
+    path("products/<int:pk>/edit/",   views.product_edit,   name="product_edit"),
+    path("products/<int:pk>/delete/", views.product_delete, name="product_delete"),
+    path("categories/",          views.category_list,   name="category_list"),
+    path("categories/add/",      views.category_add,    name="category_add"),
+    path("categories/<int:pk>/edit/", views.category_edit,  name="category_edit"),
+    path("categories/<int:pk>/delete/", views.category_delete, name="category_delete"),
+    path("orders/",              views.order_list,     name="order_list"),
+    path("orders/<int:pk>/",     views.order_detail,   name="order_detail"),
+    
+    # Agent Management
+    path("agents/",              views.agent_list,     name="agent_list"),
+    path("agents/add/",          views.agent_add,      name="agent_add"),
+    path("agents/<int:pk>/edit/", views.agent_edit,    name="agent_edit"),
+    path("agents/<int:pk>/delete/", views.agent_delete, name="agent_delete"),
+    path("agents/<int:pk>/orders/", views.agent_orders, name="agent_orders"),
+]
+'@
+Write-Host "[9/9] farmers/urls.py" -ForegroundColor Green
+
 Write-Host ""
 Write-Host "All files updated! Now running migration..." -ForegroundColor Cyan
 python manage.py migrate
