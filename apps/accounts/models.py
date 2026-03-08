@@ -1,6 +1,6 @@
 """
 accounts/models.py
-Custom User model with role-based access: FARMER | CONSUMER | ADMIN
+Custom User model with role-based access: FARMER | CONSUMER | ADMIN | AGENT
 """
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -28,29 +28,31 @@ class User(AbstractBaseUser, PermissionsMixin):
     FARMER   = "farmer"
     CONSUMER = "consumer"
     ADMIN    = "admin"
+    AGENT    = "agent"
     ROLE_CHOICES = [
         (FARMER,   "Farmer"),
         (CONSUMER, "Consumer"),
         (ADMIN,    "Admin"),
+        (AGENT,    "Delivery Agent"),
     ]
 
-    email      = models.EmailField(unique=True)
-    full_name  = models.CharField(max_length=150)
-    role       = models.CharField(max_length=10, choices=ROLE_CHOICES, default=CONSUMER)
-    phone      = models.CharField(max_length=15, blank=True)
-    is_active  = models.BooleanField(default=True)
-    is_staff   = models.BooleanField(default=False)
+    email       = models.EmailField(unique=True)
+    full_name   = models.CharField(max_length=150)
+    role        = models.CharField(max_length=10, choices=ROLE_CHOICES, default=CONSUMER)
+    phone       = models.CharField(max_length=15, blank=True)
+    is_active   = models.BooleanField(default=True)
+    is_staff    = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
-    avatar     = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    avatar      = models.ImageField(upload_to="avatars/", blank=True, null=True)
 
     objects = UserManager()
 
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD  = "email"
     REQUIRED_FIELDS = ["full_name"]
 
     class Meta:
-        db_table = "fc_users"
+        db_table     = "fc_users"
         verbose_name = "User"
 
     def __str__(self):
@@ -67,3 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin_user(self):
         return self.role == self.ADMIN
+
+    @property
+    def is_agent(self):
+        return self.role == self.AGENT

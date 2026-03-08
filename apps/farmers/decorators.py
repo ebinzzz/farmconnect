@@ -10,7 +10,7 @@ def farmer_required(view_func):
         if not request.user.is_authenticated:
             return redirect("accounts:login")
         if not request.user.is_farmer:
-            messages.error(request, "Access restricted to farmers.")
-            return redirect("farmers:dashboard")
+            messages.error(request, "Access restricted to farmers only.")
+            return redirect("products:list")
         return view_func(request, *args, **kwargs)
     return _wrapped
